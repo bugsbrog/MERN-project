@@ -1,28 +1,17 @@
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
-
-let DUMMY_PLACES = [
-	{
-		id: "p1",
-		title: "Empire State Building",
-		description: "One of the most famous skyscrapers in the world!",
-		location: {
-			lat: 40.7484445,
-			lng: -73.9882447,
-		},
-		address: "20 W 34th St, New York, NY 10001",
-		creator: "u1",
-	},
-];
+const User = require("../models/user");
 
 const getPlaceById = async (req, res, next) => {
 	const placeId = req.params.pid; // { pid: 'p1' }
 
 	let place;
+
 	try {
 		place = await Place.findById(placeId);
 	} catch (err) {
@@ -45,6 +34,7 @@ const getPlacesByUserId = async (req, res, next) => {
 	const userId = req.params.uid;
 
 	let places;
+
 	try {
 		places = await Place.find({ creator: userId });
 	} catch (err) {
@@ -86,8 +76,27 @@ const createPlace = async (req, res, next) => {
 		creator,
 	});
 
+	let user;
+
 	try {
-		await createdPlace.save();
+		user = await User.findById(creator);
+	} catch (err) {
+		const error = new HttpError("Failed to create place, please try again", 500);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError("Could not find user for provided id.", 404);
+		return next(error);
+	}
+
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await createdPlace.save({ session: sess });
+		user.places.push(createdPlace); // This "push" is mongoose
+		await user.save({ session: sess });
+		await sess.commitTransaction();
 	} catch (err) {
 		const error = new HttpError("Failed to create place, please try again.", 500);
 		return next(error);
@@ -106,6 +115,7 @@ const updatePlace = async (req, res, next) => {
 	const placeId = req.params.pid;
 
 	let place;
+
 	try {
 		place = await Place.findById(placeId);
 	} catch (err) {
@@ -130,6 +140,7 @@ const deletePlace = async (req, res, next) => {
 	const placeId = req.params.pid;
 
 	let place;
+
 	try {
 		place = await Place.findById(placeId);
 	} catch (err) {
