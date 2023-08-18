@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 
@@ -8,7 +7,7 @@ const Place = require("../models/place");
 const User = require("../models/user");
 
 const getPlaceById = async (req, res, next) => {
-	const placeId = req.params.pid; // { pid: 'p1' }
+	const placeId = req.params.pid;
 
 	let place;
 
@@ -24,11 +23,8 @@ const getPlaceById = async (req, res, next) => {
 		return next(error);
 	}
 
-	res.json({ place: place.toObject({ getters: true }) }); // => { place } => { place: place }
+	res.json({ place: place.toObject({ getters: true }) });
 };
-
-// function getPlaceById() { ... }
-// const getPlaceById = function() { ... }
 
 const getPlacesByUserId = async (req, res, next) => {
 	const userId = req.params.uid;
@@ -43,13 +39,15 @@ const getPlacesByUserId = async (req, res, next) => {
 		return next(error);
 	}
 
-	// if (!places || places.length === 0) {
+	// if (!places || places.length === 0) {}
 	if (!userWithPlaces || userWithPlaces.length === 0) {
 		const error = new HttpError("Could not find places for the provided user id.", 404);
 		return next(error);
 	}
 
-	res.json({ places: userWithPlaces.places.map((place) => place.toObject({ getters: true })) });
+	res.json({
+		places: userWithPlaces.places.map((place) => place.toObject({ getters: true })),
+	});
 };
 
 const createPlace = async (req, res, next) => {
@@ -67,7 +65,6 @@ const createPlace = async (req, res, next) => {
 		return next(error);
 	}
 
-	// const title = req.body.title;
 	const createdPlace = new Place({
 		title,
 		description,
