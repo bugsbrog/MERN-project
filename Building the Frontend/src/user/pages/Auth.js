@@ -61,6 +61,8 @@ const Auth = () => {
 	const authSubmitHandler = async (e) => {
 		e.preventDefault();
 
+		setIsLoading(true);
+
 		if (isLoginMode) {
 			try {
 				const response = await fetch("http://localhost:5001/api/users/login", {
@@ -75,9 +77,14 @@ const Auth = () => {
 				});
 
 				const responseData = await response.json();
-				console.log(responseData);
+				if (!response.ok) {
+					throw new Error(responseData.message);
+				}
+				setIsLoading(false);
+				auth.login();
 			} catch (err) {
-				console.log(err);
+				setIsLoading(false);
+				setError(err.message || "Something went wrong, please try again.");
 			}
 		} else {
 			try {
@@ -98,11 +105,9 @@ const Auth = () => {
 				if (!response.ok) {
 					throw new Error(responseData.message);
 				}
-				console.log(responseData);
 				setIsLoading(false);
 				auth.login();
 			} catch (err) {
-				console.log(err);
 				setIsLoading(false);
 				setError(err.message || "Something went wrong, please try again.");
 			}
