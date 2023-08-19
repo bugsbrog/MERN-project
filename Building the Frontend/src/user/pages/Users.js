@@ -5,8 +5,6 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const Users = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState();
 	const [loadedUsers, setLoadedUsers] = useState();
 
 	useEffect(() => {
