@@ -59,6 +59,7 @@ const createPlace = async (req, res, next) => {
 	const { title, description, address, creator } = req.body;
 
 	let coordinates;
+
 	try {
 		coordinates = await getCoordsForAddress(address);
 	} catch (error) {
@@ -70,8 +71,7 @@ const createPlace = async (req, res, next) => {
 		description,
 		address,
 		location: coordinates,
-		image:
-			"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/NYC_Empire_State_Building.jpg/640px-NYC_Empire_State_Building.jpg",
+		image: req.file.path,
 		creator,
 	});
 
@@ -89,7 +89,7 @@ const createPlace = async (req, res, next) => {
 		return next(error);
 	}
 
-  console.log(user);
+	console.log(user);
 
 	try {
 		const sess = await mongoose.startSession();
